@@ -13,7 +13,6 @@
     <view source="all" match="hunting" />
   </collection>
 
-
   <collection label="Sysmon">
     <view source="all" match="sysmon" />
   </collection>
