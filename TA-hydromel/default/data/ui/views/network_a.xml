@@ -1,0 +1,100 @@
+<form theme="dark">
+  <label>Connections réseau</label>
+  <init>
+    <unset token="help"></unset>
+  </init>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="time" token="timerange" searchWhenChanged="false">
+      <label>Fenêtre de temps</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Connections SORTANTES autre que RDP</title>
+      <table>
+        <title>L'ordinateur &lt;SourceHostname&gt; se connecte sur &lt;DestinationIp&gt; avec le programme &lt;Image&gt;</title>
+        <search>
+          <query>index=windows_evtx SourceIp!="0:0:0:0:0:0:0:1" EventID=3 Initiated=true DestinationPort!=3389 Image!="C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.2109.6-0\\MsMpEng.exe" | bucket _time span=10m | stats values(DestinationPort) by _time, Image, DestinationIp | sort -_time</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Connections ENTRANTES autre que RDP</title>
+      <table>
+        <search>
+          <query>index=windows_evtx SourceIp!="0:0:0:0:0:0:0:1" EventID=3 Initiated=false DestinationPort!=3389 Image!="C:\\Windows\\System32\\OpenSSH\\sshd.exe" | bucket _time span=10m | stats values(DestinationPort) by _time, Image, SourceIp | sort -_time</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Connections RDP réussies</title>
+      <chart>
+        <search>
+          <query>index=windows_evtx EventCode=4624 | timechart count by user</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <search>
+          <query>index=windows_evtx EventCode=4625 | timechart count by IpAddress</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>TOP comptes bruteforce</title>
+      <chart>
+        <search>
+          <query>index=windows_evtx EventCode=4625 | top TargetUserName</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Bruteforce comptes RDP</title>
+      <table>
+        <search>
+          <query>index=windows_evtx EventCode=4625 | bucket _time span=30m | stats values(TargetUserName) by _time, IpAddress | sort -_time</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</form>

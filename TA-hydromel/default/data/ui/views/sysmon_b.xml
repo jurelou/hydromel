@@ -1,0 +1,108 @@
+<form theme="dark">
+  <label>Detection</label>
+  <description></description>
+  <init>
+    <unset token="help"></unset>
+  </init>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="time" token="timerange" searchWhenChanged="false">
+      <label>Fenêtre de temps</label>
+      <default>
+        <earliest>0</earliest>
+        <latest></latest>
+      </default>
+    </input>
+    <input type="multiselect" token="computer_name" searchWhenChanged="true">
+      <label>Computer</label>
+      <choice value="*">Tous</choice>
+      <valuePrefix>Computer="</valuePrefix>
+      <delimiter> OR </delimiter>
+      <valueSuffix>"</valueSuffix>
+      <fieldForLabel>Computer</fieldForLabel>
+      <fieldForValue>Computer</fieldForValue>
+      <search>
+        <query>index=windows_evtx source="WinEventLog:Microsoft-Windows-Sysmon/Operational" | fields Computer | eval Computer=replace(Computer,"\\\\", "\\\\\\\\") | stats values BY Computer</query>
+        <earliest>$timerange.earliest$</earliest>
+        <latest>$timerange.latest$</latest>
+      </search>
+      <default>*</default>
+    </input>
+    <input type="multiselect" token="product_name" searchWhenChanged="true">
+      <label>Nom de l'editeur logiciel</label>
+      <choice value="*">Tous</choice>
+      <valuePrefix>Product="</valuePrefix>g<delimiter> OR </delimiter>
+      <fieldForLabel>Product</fieldForLabel>
+      <fieldForValue>Product</fieldForValue>
+      <search>
+        <query>index=windows_evtx source="WinEventLog:Microsoft-Windows-Sysmon/Operational" | fields Product | stats values BY Product</query>
+        <earliest>$timerange.earliest$</earliest>
+        <latest>$timerange.latest$</latest>
+      </search>
+      <valueSuffix>"</valueSuffix>
+      <default>*</default>
+    </input>
+    <input type="multiselect" token="image_name" searchWhenChanged="true">
+      <label>Image</label>
+      <choice value="*">Toutes</choice>
+      <valuePrefix>Image="</valuePrefix>
+      <delimiter> OR </delimiter>
+      <valueSuffix>"</valueSuffix>
+      <fieldForLabel>Image</fieldForLabel>
+      <fieldForValue>Image</fieldForValue>
+      <search>
+        <query>index=windows_evtx source="WinEventLog:Microsoft-Windows-Sysmon/Operational" | fields Image | eval Image=replace(Image,"\\\\", "\\\\\\\\") | stats values BY Image</query>
+        <earliest>$timerange.earliest$</earliest>
+        <latest>$timerange.latest$</latest>
+      </search>
+      <default>*</default>
+    </input>
+    <input type="multiselect" token="user_id" searchWhenChanged="true">
+      <label>User ID</label>
+      <choice value="*">Tous</choice>
+      <valuePrefix>UserID="</valuePrefix>
+      <delimiter> OR </delimiter>
+      <valueSuffix>"</valueSuffix>
+      <fieldForLabel>UserID</fieldForLabel>
+      <fieldForValue>UserID</fieldForValue>
+      <search>
+        <query>index=windows_evtx source="WinEventLog:Microsoft-Windows-Sysmon/Operational" | fields UserID | stats values BY UserID</query>
+        <earliest>$timerange.earliest$</earliest>
+        <latest>$timerange.latest$</latest>
+      </search>
+      <default>*</default>
+    </input>
+    <input type="multiselect" token="user_name" searchWhenChanged="true">
+      <label>User</label>
+      <choice value="*">Tous</choice>
+      <valuePrefix>User="</valuePrefix>
+      <delimiter> OR </delimiter>
+      <valueSuffix>"</valueSuffix>
+      <fieldForLabel>User</fieldForLabel>
+      <fieldForValue>User</fieldForValue>
+      <search>
+        <query>index=windows_evtx source="WinEventLog:Microsoft-Windows-Sysmon/Operational" | fields User | eval User=replace(User,"\\\\", "\\\\\\\\") | stats values BY User</query>
+        <earliest>$timerange.earliest$</earliest>
+        <latest>$timerange.latest$</latest>
+      </search>
+      <default>*</default>
+    </input>
+    <input type="text" token="full_text_search">
+      <label>Full text search</label>
+      <default></default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>[PERSISTENCE] runkeys via sysmon type 12 / 13 / 14</title>
+      <table>
+        <search>
+          <query>index=windows_evtx $user_id$ $computer_name$ $image_name$ $full_text_search$ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=12 OR EventCode=13 OR EventCode=14 TargetObject="*\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" OR TargetObject="*\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce" | table _time, EventCode, Image, EventType, TargetObject | sort -_time</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</form>

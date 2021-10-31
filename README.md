@@ -2,6 +2,15 @@
 
 Splunk application for SIGMA
 
+# Generate savedsearches.conf
+
+```
+python3 -m venv env
+source env/bin/activate
+pip install .
+python sigma2splunk.py ./rules/
+```
+
 ## Doc
 
 - https://patzke.org/a-guide-to-generic-log-sources-in-sigma.html

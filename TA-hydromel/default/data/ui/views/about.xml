@@ -1,0 +1,9 @@
+<dashboard theme="dark">
+  <label>About</label>
+  <description>Informations diverses à propos de cette app.</description>
+  <init>
+    <unset token="help"></unset>
+  </init>
+  <row>
+  </row>
+</dashboard>

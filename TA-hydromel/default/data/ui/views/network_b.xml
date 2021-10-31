@@ -1,0 +1,145 @@
+<form theme="dark">
+  <label>GLOBAL</label>
+  <init>
+    <unset token="help"></unset>
+  </init>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="time" token="timerange" searchWhenChanged="false">
+      <label>Fenêtre de temps</label>
+      <default>
+        <earliest>0</earliest>
+        <latest></latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <chart>
+        <title>Logs entrants</title>
+        <search>
+          <query>index=iptables OR index=fw  | eval description=case(index=="fw", "melmor", index == "iptables", "rosemary") | timechart count by description</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>[MELMOR]</title>
+      <map>
+        <search>
+          <query>index=fw  src_ip!="94.250.203.215"  dest_int=igb0 direction=inbound | iplocation src_ip | stats count by Country| geom geo_countries allFeatures=True featureIdField=Country</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="mapping.choroplethLayer.colorBins">9</option>
+        <option name="mapping.type">choropleth</option>
+        <option name="refresh.display">progressbar</option>
+      </map>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>[ROSEMARY]</title>
+      <map>
+        <search>
+          <query>index=iptables  source_ip!="161.97.128.*" source_ip!="82.64.9.251" interface_input=eth0  | iplocation source_ip | stats count by Country| geom geo_countries allFeatures=True featureIdField=Country</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="mapping.choroplethLayer.colorBins">9</option>
+        <option name="mapping.type">choropleth</option>
+        <option name="refresh.display">progressbar</option>
+      </map>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>[MELMOR]  TOP src_ip</title>
+      <table>
+        <search>
+          <query>index=fw  src_ip!="94.250.203.215" dest_int=igb0 direction=inbound | iplocation src_ip | stats count by src_ip, Country, City | sort -count</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <title>[ROSEMARY] TOP src_ip</title>
+      <table>
+        <search>
+          <query>index=iptables  source_ip!="161.97.128.*" source_ip!="82.64.9.251" interface_input=eth0 | iplocation source_ip   | stats  count by source_ip, Country, City   | sort  -count</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>[MELMOR]  TOP countries</title>
+      <chart>
+        <search>
+          <query>index=fw dest_int=igb0 direction=inbound | iplocation src_ip | top Country  limit=7</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>[ROSEMARY] TOP countries</title>
+      <chart>
+        <search>
+          <query>index=iptables  source_ip!="82.64.9.251"  source_ip!="161.97.128.*" interface_input=eth0 | iplocation source_ip  | top  Country</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>[MELMOR] TOP dest ports</title>
+      <chart>
+        <search>
+          <query>index=fw  dest_int=igb0 direction=inbound dest_port!=4244 | top dest_port</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>[ROSEMARY] TOP dest ports</title>
+      <chart>
+        <search>
+          <query>index=iptables  source_ip!="161.97.128.*" source_ip!="82.64.9.251"  interface_input=eth0 | top destination_port</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+</form>

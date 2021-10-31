@@ -1,0 +1,27 @@
+<nav color="#20C20E">
+  <view name="about" default="true" />
+
+  <collection label="Network">
+    <view source="all" match="network" />
+  </collection>
+
+  <collection label="Honey">
+    <view source="all" match="honey" />
+  </collection>
+
+  <collection label="Hunting">
+    <view source="all" match="hunting" />
+  </collection>
+
+
+  <collection label="Sysmon">
+    <view source="all" match="sysmon" />
+  </collection>
+
+  <collection label="SIGMA">
+    <view source="all" match="sigma" />
+  </collection>
+
+  <view name="metrics" />
+  <view name="search" />
+</nav>

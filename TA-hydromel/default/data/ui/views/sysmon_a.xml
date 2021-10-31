@@ -1,0 +1,285 @@
+<form theme="dark">
+  <label>Global</label>
+  <description>Liste les machines et les utilisateurs présents sur le parc informatique</description>
+  <init>
+    <unset token="help"></unset>
+  </init>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="time" token="timerange" searchWhenChanged="false">
+      <label>Fenêtre de temps</label>
+      <default>
+        <earliest>0</earliest>
+        <latest></latest>
+      </default>
+    </input>
+    <input type="multiselect" token="computer_name" searchWhenChanged="true">
+      <label>Computer</label>
+      <choice value="*">Tous</choice>
+      <valuePrefix>Computer="</valuePrefix>
+      <delimiter> OR </delimiter>
+      <valueSuffix>"</valueSuffix>
+      <fieldForLabel>Computer</fieldForLabel>
+      <fieldForValue>Computer</fieldForValue>
+      <search>
+        <query>index=windows_evtx source="WinEventLog:Microsoft-Windows-Sysmon/Operational" | fields Computer | eval Computer=replace(Computer,"\\\\", "\\\\\\\\") | stats values BY Computer</query>
+        <earliest>$timerange.earliest$</earliest>
+        <latest>$timerange.latest$</latest>
+      </search>
+      <default>*</default>
+    </input>
+    <input type="multiselect" token="product_name" searchWhenChanged="true">
+      <label>Nom de l'editeur logiciel</label>
+      <choice value="*">Tous</choice>
+      <valuePrefix>Product="</valuePrefix>g<delimiter> OR </delimiter>
+      <fieldForLabel>Product</fieldForLabel>
+      <fieldForValue>Product</fieldForValue>
+      <search>
+        <query>index=windows_evtx source="WinEventLog:Microsoft-Windows-Sysmon/Operational" | fields Product | stats values BY Product</query>
+        <earliest>$timerange.earliest$</earliest>
+        <latest>$timerange.latest$</latest>
+      </search>
+      <valueSuffix>"</valueSuffix>
+      <default>*</default>
+    </input>
+    <input type="multiselect" token="image_name" searchWhenChanged="true">
+      <label>Image</label>
+      <choice value="*">Toutes</choice>
+      <valuePrefix>Image="</valuePrefix>
+      <delimiter> OR </delimiter>
+      <valueSuffix>"</valueSuffix>
+      <fieldForLabel>Image</fieldForLabel>
+      <fieldForValue>Image</fieldForValue>
+      <search>
+        <query>index=windows_evtx source="WinEventLog:Microsoft-Windows-Sysmon/Operational" | fields Image | eval Image=replace(Image,"\\\\", "\\\\\\\\") | stats values BY Image</query>
+        <earliest>$timerange.earliest$</earliest>
+        <latest>$timerange.latest$</latest>
+      </search>
+      <default>*</default>
+    </input>
+    <input type="multiselect" token="user_id" searchWhenChanged="true">
+      <label>User ID</label>
+      <choice value="*">Tous</choice>
+      <valuePrefix>UserID="</valuePrefix>
+      <delimiter> OR </delimiter>
+      <valueSuffix>"</valueSuffix>
+      <fieldForLabel>UserID</fieldForLabel>
+      <fieldForValue>UserID</fieldForValue>
+      <search>
+        <query>index=windows_evtx source="WinEventLog:Microsoft-Windows-Sysmon/Operational" | fields UserID | stats values BY UserID</query>
+        <earliest>$timerange.earliest$</earliest>
+        <latest>$timerange.latest$</latest>
+      </search>
+      <default>*</default>
+    </input>
+    <input type="multiselect" token="user_name" searchWhenChanged="true">
+      <label>User</label>
+      <choice value="*">Tous</choice>
+      <valuePrefix>User="</valuePrefix>
+      <delimiter> OR </delimiter>
+      <valueSuffix>"</valueSuffix>
+      <fieldForLabel>User</fieldForLabel>
+      <fieldForValue>User</fieldForValue>
+      <search>
+        <query>index=windows_evtx source="WinEventLog:Microsoft-Windows-Sysmon/Operational" | fields User | eval User=replace(User,"\\\\", "\\\\\\\\") | stats values BY User</query>
+        <earliest>$timerange.earliest$</earliest>
+        <latest>$timerange.latest$</latest>
+      </search>
+      <default>*</default>
+    </input>
+    <input type="text" token="full_text_search">
+      <label>Full text search</label>
+      <default></default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Event ID 1: Process creation</title>
+      <table>
+        <search>
+          <query>index=windows_evtx $user_id$ $computer_name$ $user_name$ $full_text_search$ $product_name$ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1 | table _time, Company, Product, User, CurrentDirectory, CommandLine | sort -_time</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event ID 6: Driver loaded</title>
+      <table>
+        <search>
+          <query>index=windows_evtx $user_id$ $computer_name$ $full_text_search$ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=6 | table _time, Signed, ImageLoaded | sort -_time</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event ID 7: Image loaded</title>
+      <table>
+        <search>
+          <query>index=windows_evtx $user_id$ $computer_name$ $full_text_search$ $image_name$ $product_name$ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=7 | table _time, Product, Signature, Image, ImageLoaded, OriginalFileName | sort -_time</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event ID 2: A process changed a file creation time</title>
+      <table>
+        <search>
+          <query>index=windows_evtx $user_id$ $computer_name$ $full_text_search$ $image_name$ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=2 | table _time, CreationUtcTime, Image, TargetFilename | sort -_time</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event ID 4: Sysmon service state changed</title>
+      <table>
+        <search>
+          <query>index=windows_evtx $user_id$ $computer_name$ $full_text_search$ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=4 | table _time, State  | sort -_time</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Event ID 5: Process terminated</title>
+      <table>
+        <search>
+          <query>index=windows_evtx $user_id$ $computer_name$ $full_text_search$ $image_name$ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=5 | table _time, Image | sort -_time</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event ID 8: CreateRemoteThread</title>
+      <event>
+        <search>
+          <query>index=windows_evtx $full_text_search$ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=8</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="list.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </event>
+    </panel>
+    <panel>
+      <title>Event ID 9: RawAccessRead</title>
+      <table>
+        <search>
+          <query>index=windows_evtx $full_text_search$ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=9</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event ID 10: ProcessAccess</title>
+      <table>
+        <search>
+          <query>index=windows_evtx $user_id$ $computer_name$ $full_text_search$ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=10 NOT (SourceImage=C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe AND (TargetImage=C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe OR TargetImage=C:\\Windows\\system32\\chcp.com OR TargetImage=C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe)) NOT ((SourceImage=C:\\Windows\\system32\\csrss.exe OR SourceImage=C:\\Windows\\system32\\wininit.exe) AND TargetImage=C:\\Windows\\system32\\lsass.exe) NOT (SourceImage=C:\\Windows\\System32\\RemoteFXvGPUDisablement.exe AND TargetImage="C:\\ProgramData\\Microsoft\\Windows Defender\\platform\\*\\MsMpEng.exe") | table _time, SourceImage, TargetImage | sort -_time</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event ID 11: FileCreate</title>
+      <table>
+        <search>
+          <query>index=windows_evtx $user_id$ $computer_name$ $full_text_search$ $image_name$ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=11 NOT (Image=C:\\Windows\\System32\\svchost.exe AND (TargetFilename=C:\\Windows\\ServiceState\\EventLog\\Data\\lastalive0.dat OR TargetFilename=C:\\Windows\\ServiceState\\EventLog\\Data\\lastalive1.dat )) NOT (Image=C:\\Windows\\System32\\spoolsv.exe AND TargetFilename=C:\\Windows\\System32\\spool\\V4Dirs*) | table _time, Image, TargetFilename, RuleName | sort -_time</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event ID 22: DNSEvent (DNS query)</title>
+      <table>
+        <search>
+          <query>index=windows_evtx $user_id$ $computer_name$ $full_text_search$ $image_name$ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=22 QueryName!=WIN-G60QKDQPSBE | table _time, Image, QueryName, QueryResult, QueryStatus | sort -_time</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event ID 12 - 13 - 14: RegistryEvent</title>
+      <table>
+        <search>
+          <query>index=windows_evtx $user_id$ $computer_name$ $image_name$ $full_text_search$ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=12 OR EventCode=13 OR EventCode=14 NOT TargetObject="HKLM\\System\\CurrentControlSet\\Services\\ClipSVC\\Parameters" NOT TargetObject="HKLM\\SOFTWARE\\*Certificates\\*\\Certificates" NOT TargetObject="HKU\\*\\Software*\\Microsoft\\SystemCertificates*\\Certificates" NOT TargetObject="HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tree\\Microsoft\\Windows\\UpdateOrchestrator" NOT TargetObject="HKLM\\System\\CurrentControlSet\\Services\\NetBT" | table _time, EventCode, Image, severity_id, EventType, TargetObject | sort -_time</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event ID 16- 17: PipeEvent</title>
+      <table>
+        <search>
+          <query>index=windows_evtx $user_id$ $image_name$ $computer_name$ $full_text_search$ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=17 OR EventCode=18  Image!="C:\\Windows\\System32\\OpenSSH\\sshd.exe" | table _time, EventCode, EventType, Image, PipeName | sort -_name</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event ID 19-20-21: WmiEvent</title>
+      <table>
+        <search>
+          <query>index=windows_evtx source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=19 OR EventCode=20 OR EventCode=21</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+</form>

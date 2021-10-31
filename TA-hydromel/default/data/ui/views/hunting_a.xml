@@ -1,0 +1,11 @@
+<form theme="dark">
+  <label>Hunting [WIP]</label>
+  <description>todo.</description>
+  <init>
+    <unset token="help"></unset>
+  </init>
+  <fieldset submitButton="true" autoRun="false">
+  </fieldset>
+  <row>
+  </row>
+</form>

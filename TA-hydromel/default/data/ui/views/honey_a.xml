@@ -1,0 +1,78 @@
+<form theme="dark">
+  <label>Monitoring machine</label>
+  <description>Recherche de latéralisation dans les journaux d'évènements Microsoft Windows. Ce tableau de bord vise principalement la tactique "Lateral Movement" (TA0008) et les sous-techniques associées à "Remote Services" (T1021).</description>
+  <init>
+    <unset token="help"></unset>
+  </init>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="time" token="timerange" searchWhenChanged="false">
+      <label>Fenêtre de temps</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Machine reboot</title>
+      <chart>
+        <search>
+          <query>index=windows_evtx EventCode=6006 OR EventCode=41 OR EventCode=1074 OR EventCode=6008 | timechart count</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Processus suspects !!</title>
+      <table>
+        <title>La machine &lt;Computer&gt; execute le programme suspect &lt;Image&gt;</title>
+        <search>
+          <query>`windows_sysmon` $source_computer$ NOT Product="*Microsoft*Windows*"
+| where Image!="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" AND Product!="VMware Workstation" AND Product!="VMware Tools" AND Product!="Microsoft Outlook" AND Product!="Microsoft Office 2013" AND Product!="Microsoft® .NET Framework" AND ParentImage!="C:\Program Files\SplunkUniversalForwarder\bin\splunkd.exe" AND ParentImage!="C:\Program Files\Microsoft Security Client\MsMpEng.exe" AND ParentImage!="C:\Program Files\Microsoft Security Client\MpCmdRun.exe" AND ParentImage!="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" AND ParentImage!="C:\Program Files (x86)\Google\Chrome\Application\67.0.3396.99\Installer\chrmstp.exe" AND ParentImage!="C:\Program Files\Common Files\microsoft shared\Web Server Extensions\15\UserCode\SPUCHostService.exe"
+| table SystemTime, Computer, User, Product, CommandLine, Image, ParentImage, ParentCommandLine</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Sysmon Event ID 1: Process creation</title>
+      <table>
+        <title>La machine &lt;Computer&gt; execute le programme &lt;Image&gt;</title>
+        <search>
+          <query>`windows_sysmon` $source_computer$ | where Image!="C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe" AND Product!="VMware Tools"
+| table _time, Computer, User, Product, CommandLine, Image, ParentImage, ParentCommandLine</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event ID 11: FileCreate</title>
+      <table>
+        <title>Le fichier &lt;TargetFilename&gt; a été crée sur la machine &lt;Computer&gt; par le processus &lt;Image&gt;</title>
+        <search>
+          <query>`windows_sysmon` $source_computer$ EventCode=11 NOT (Image="C:\\WINDOWS\\system32\\WindowsPowerShell*powershell.exe" AND TargetFilename="C:\\Windows\\Temp*.ps1") NOT (Image="C:\\Windows\\system32\\svchost.exe" AND TargetFilename="C:\\Windows\\System32\\Tasks\\Microsoft\\Windows\\GroupPolicy\\GPUpdate*")
+| table _time, Computer, Image, TargetFilename</query>
+          <earliest>$timerange.earliest$</earliest>
+          <latest>$timerange.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</form>
