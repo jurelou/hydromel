@@ -1,0 +1,126 @@
+---
+title: Splunk Windows log source conditions
+fieldmappings:
+    EventID: EventCode
+
+#####################################
+# COMMON CHANNELS
+####################################
+logsources:
+  windows-application:
+    product: windows
+    service: application
+    conditions:
+      source: 'WinEventLog:Application'
+  windows-security:
+    product: windows
+    service: security
+    conditions:
+      source: 'WinEventLog:Security'
+  windows-system:
+    product: windows
+    service: system
+    conditions:
+      source: 'WinEventLog:System'
+
+#####################################
+# POWERSHELL
+####################################
+  windows-powershell:
+    product: windows
+    service: powershell
+    conditions:
+      source: 'WinEventLog:Microsoft-Windows-PowerShell/Operational'
+  windows-classicpowershell:
+    product: windows
+    service: powershell-classic
+    conditions:
+      source: 'WinEventLog:Windows PowerShell'
+
+#####################################
+# SMB
+####################################
+  windows-smbclient-security:
+    product: windows
+    service: smbclient-security
+    conditions:
+      source: 'WinEventLog:Microsoft-Windows-SmbClient/Security'
+
+#####################################
+# PRINT SERVICE
+####################################
+  windows-printservice-admin:
+    product: windows
+    service: printservice-admin
+    conditions:
+      source: 'WinEventLog:Microsoft-Windows-PrintService/Admin'
+  windows-printservice-operational:
+    product: windows
+    service: printservice-operational
+    conditions:
+      source: 'WinEventLog:Microsoft-Windows-PrintService/Operational'
+
+#####################################
+# WMI
+####################################
+  windows-wmi:
+    product: windows
+    service: wmi
+    conditions:
+      source: 'WinEventLog:Microsoft-Windows-WMI-Activity/Operational'
+
+#####################################
+# DNS
+####################################
+  windows-dns-server:
+    product: windows
+    service: dns-server
+    category: dns
+    conditions:
+      source: 'WinEventLog:DNS Server'
+  windows-dns-server-audit:
+    product: windows
+    service: dns-server-audit
+    conditions:
+      source: 'WinEventLog:Microsoft-Windows-DNS-Server/Audit'
+
+#####################################
+# TASK SCHEDULER
+####################################
+  windows-taskscheduler:
+    product: windows
+    service: taskscheduler
+    conditions:
+      source: 'WinEventLog:Microsoft-Windows-TaskScheduler/Operational'
+
+#####################################
+# MSEXCHANGE
+####################################
+  windows-msexchange-management:
+    product: windows
+    service: msexchange-management
+    conditions:
+      source: 'WinEventLog:MSExchange Management'
+
+#####################################
+# SYSMON
+####################################
+  windows-sysmon:
+    product: windows
+    service: sysmon
+    conditions:
+      source: 'WinEventLog:Microsoft-Windows-Sysmon/Operational'
+
+  windows-process-creation:
+    product: windows
+    service: sysmon
+    category: process_creation
+    # Optimized search for process creation, being dramatically faster in Lispy than just EventCode=1 search, as 'ParentProcessGuid' is more unique than '1' in the raw data.
+    # This also supports custom splunk macros, just like they are written in splunk (i.e. as `macro`), minding that it has to be written inside the string quotes here.
+    search: 'ParentProcessGuid EventCode=1'
+
+  windows-file-creation:
+    product: windows
+    service: sysmon
+    category: file_creation
+    search: 'TargetFilename EventCode=11'

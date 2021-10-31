@@ -1,0 +1,43 @@
+{% for search in searches %}
+
+[{{search.sigma_rule.title}}]
+#Global options
+disabled = false
+search = {{ search.query }}
+
+#Scheduling options
+enableSched = true
+cron_schedule = {{ search.config.crontab_schedule }}
+allow_skew = {{ search.config.allow_skew }}
+schedule_window = auto
+
+#Notification options
+counttype = number of events
+relation = greater than
+quantity = 0
+
+#Settings for summary index action
+action.summary_index = true
+action.summary_index._name = {{ search.config.summary_index }}
+{% for tag in search.sigma_rule.tags %}
+action.summary_index.sigma_tags = {{ tag }}
+{% if "attack.t" in tag %}
+action.summary_index.attack_ID = {{ tag[7:] }}
+{% endif %}
+{% endfor %}
+
+#dispatch search options
+dispatch.earliest_time = {{ search.config.dispatch_earliest_time }}
+dispatch.latest_time = now
+
+#alert settings
+alert.suppress = false
+alert.severity = 4
+alert.track = true
+alert.expires = 24h
+
+#UI-specific settings
+request.ui_dispatch_app = {{ search.config.splunk_app_name }}
+request.ui_dispatch_view = search
+description = "{{ search.sigma_rule.description }}"
+{% endfor %}
