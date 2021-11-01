@@ -1,7 +1,18 @@
 ---
 title: Splunk Windows log source conditions
 fieldmappings:
+    dst_ip: dest_ip
+    dst_port: dest_port
+  
     EventID: EventCode
+    ClientIP: src_ip
+
+    ServiceFileName: ImagePath
+    ProcessCommandLine: Image
+    ProcessCommandline: ProcessCommandLine
+    OriginalFilename: OriginalFileName
+    ComputerName: Computer
+    MachineName: Computer
 
 #####################################
 # COMMON CHANNELS
@@ -11,17 +22,17 @@ logsources:
     product: windows
     service: application
     conditions:
-      source: 'WinEventLog:Application'
+      Channel: 'Application'
   windows-security:
     product: windows
     service: security
     conditions:
-      source: 'WinEventLog:Security'
+      Channel: 'Security'
   windows-system:
     product: windows
     service: system
     conditions:
-      source: 'WinEventLog:System'
+      Channel: 'System'
 
 #####################################
 # POWERSHELL
@@ -30,12 +41,12 @@ logsources:
     product: windows
     service: powershell
     conditions:
-      source: 'WinEventLog:Microsoft-Windows-PowerShell/Operational'
+      Channel: 'Microsoft-Windows-PowerShell/Operational'
   windows-classicpowershell:
     product: windows
     service: powershell-classic
     conditions:
-      source: 'WinEventLog:Windows PowerShell'
+      Channel: 'Windows PowerShell'
 
 #####################################
 # SMB
@@ -44,7 +55,7 @@ logsources:
     product: windows
     service: smbclient-security
     conditions:
-      source: 'WinEventLog:Microsoft-Windows-SmbClient/Security'
+      Channel: 'Microsoft-Windows-SmbClient/Security'
 
 #####################################
 # PRINT SERVICE
@@ -53,12 +64,12 @@ logsources:
     product: windows
     service: printservice-admin
     conditions:
-      source: 'WinEventLog:Microsoft-Windows-PrintService/Admin'
+      Channel: 'Microsoft-Windows-PrintService/Admin'
   windows-printservice-operational:
     product: windows
     service: printservice-operational
     conditions:
-      source: 'WinEventLog:Microsoft-Windows-PrintService/Operational'
+      Channel: 'Microsoft-Windows-PrintService/Operational'
 
 #####################################
 # WMI
@@ -67,7 +78,7 @@ logsources:
     product: windows
     service: wmi
     conditions:
-      source: 'WinEventLog:Microsoft-Windows-WMI-Activity/Operational'
+      Channel: 'Microsoft-Windows-WMI-Activity/Operational'
 
 #####################################
 # DNS
@@ -77,12 +88,12 @@ logsources:
     service: dns-server
     category: dns
     conditions:
-      source: 'WinEventLog:DNS Server'
+      Channel: 'DNS Server'
   windows-dns-server-audit:
     product: windows
     service: dns-server-audit
     conditions:
-      source: 'WinEventLog:Microsoft-Windows-DNS-Server/Audit'
+      Channel: 'Microsoft-Windows-DNS-Server/Audit'
 
 #####################################
 # TASK SCHEDULER
@@ -91,7 +102,7 @@ logsources:
     product: windows
     service: taskscheduler
     conditions:
-      source: 'WinEventLog:Microsoft-Windows-TaskScheduler/Operational'
+      Channel: 'Microsoft-Windows-TaskScheduler/Operational'
 
 #####################################
 # MSEXCHANGE
@@ -109,7 +120,7 @@ logsources:
     product: windows
     service: sysmon
     conditions:
-      source: 'WinEventLog:Microsoft-Windows-Sysmon/Operational'
+      Channel: 'Microsoft-Windows-Sysmon/Operational'
 
   windows-process-creation:
     product: windows
@@ -119,8 +130,21 @@ logsources:
     # This also supports custom splunk macros, just like they are written in splunk (i.e. as `macro`), minding that it has to be written inside the string quotes here.
     search: 'ParentProcessGuid EventCode=1'
 
+  windows-process-access:
+    product: windows
+    service: sysmon
+    category: process_access
+    search: 'EventCode=10'
+
+  windows-file-delete:
+    product: windows
+    service: sysmon
+    category: file_delete
+    search: 'EventCode=11'
+
   windows-file-creation:
     product: windows
     service: sysmon
     category: file_creation
     search: 'TargetFilename EventCode=11'
+
