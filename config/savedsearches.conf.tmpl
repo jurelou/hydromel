@@ -19,6 +19,9 @@ quantity = 0
 #Settings for summary index action
 action.summary_index = true
 action.summary_index._name = {{ search.config.summary_index }}
+action.summary_index.rule_title = {{ search.sigma_rule.title }}
+action.summary_index.rule_description = {{ search.sigma_rule.description }}
+
 {% for tag in search.sigma_rule.tags %}
 action.summary_index.sigma_tags = {{ tag }}
 {% if "attack.t" in tag %}
